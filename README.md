@@ -1,24 +1,26 @@
 # popstacle
 
-## Project setup
-```
-npm install
-```
+改编自小学时代经常玩的拍手游戏
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+## 具体规则
+每个回合，双方可以选择一种颜色，对应一种操作：
 
-### Compiles and minifies for production
-```
-npm run build
-```
+绿色、蓝色是加入操作，自己底部加入一个相应颜色的方块。
 
-### Lints and fixes files
-```
-npm run lint
-```
+黄色、橙色、紫色是消除操作，分别会消耗自己底部的一个、两个、三个绿色方块，而对方的底部在遇到蓝色方块之前最多能被消除两倍于自己的方块。
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+消除操作的执行需要自己底部拥有足够数量的连续绿色方块。
+
+如果双方都选择了对应消除效果的颜色，则只有消耗量较大的一方产生效果。如果双方的消耗量相等，则跳过这个回合，不执行任何操作。
+
+最终绿色方块数量较多的一方获胜。
+
+## 后端的一些版本
+
+flask 2.0.0
+
+Flask-SocketIO 5.0.1
+
+python 3.6
+
+python-socketio 5.2.1
