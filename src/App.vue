@@ -35,7 +35,7 @@
       <div v-if="showTips" class="info-wrap" style="position:absolute;top:100px;width:100%;z-index: 1400;color:#838c95">
         <div class="info-wrap-horizontal"
              style="padding:20px;margin: auto;text-align: left;width:80%;height:300px;overflow: scroll;background-color: #e7ebef;border-radius: 5px;box-shadow:0 5px 10px #838c95;">
-          <h2>游戏规则：</h2>
+          <h1>游戏规则</h1>
           <p>每个回合，双方可以选择一种颜色，对应一种操作：</p>
           <p><span class="green">绿色</span>、<span class="blue">蓝色</span>是加入操作，自己底部加入一个相应颜色的方块。</p>
           <p><span class="yellow">黄色</span>、<span class="orange">橙色</span>、<span class="purple">紫色</span>是消除操作，分别会消耗自己底部的一个、两个、三个<span
@@ -49,9 +49,9 @@
     <transition name="info-box">
       <div v-if="showTips" class="info-wrap" style="position:absolute;top:460px;width:100%;z-index: 1400;color:#838c95">
         <div class="info-wrap-horizontal"
-             style="padding:20px;margin: auto;text-align: left;width:80%;height:100px;background-color: #e7ebef;border-radius: 5px;box-shadow:0 5px 10px #838c95;">
-          <h2>Star me on github</h2>
-          还不知道地址。。。
+             style="padding:20px;margin: auto;text-align: left;width:80%;height:120px;background-color: #e7ebef;border-radius: 5px;box-shadow:0 5px 10px #838c95;">
+          <h1>项目地址</h1>
+          <a href="https://github.com/zhongshuren/popstacle">zhongshuren/popstacle</a>
         </div>
       </div>
     </transition>
