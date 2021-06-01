@@ -6,7 +6,7 @@
     <div style="position: absolute;top:40px;left:20px;z-index: 1000">
       <span style="font-size: 36px;color: #bdc9d5" @click="mRefresh()">popstacle.top</span>
     </div>
-    <div style="position: absolute;top:40px;right: 20px;z-index:1001">
+    <div style="position: absolute;top:40px;right: 20px;z-index:3001">
       <span style="font-size: 36px;color: #bdc9d5" @click="showTips=!showTips"><i class="el-icon-more"></i></span>
     </div>
     <div id="bottom-buttons" style="position: absolute;bottom: 0;width:100%;z-index: 1100">
