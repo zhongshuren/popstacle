@@ -10,11 +10,11 @@ axios.defaults.baseURL = '/api'
 
 Vue.config.productionTip = false
 Vue.use(new VueSocketIO({
-  debug:true,
-  connection:SocketIO('/socket.io'),
+    debug: false,
+    connection: SocketIO('/socket.io'),
 }))
 Vue.use(ElementUI)
 
 new Vue({
-  render: h => h(App),
+    render: h => h(App),
 }).$mount('#app')

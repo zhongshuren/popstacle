@@ -4,7 +4,7 @@
     <div
         style="position: absolute;top:240px;width:100%;height:60px;background-image:linear-gradient(180deg, rgba(231,235,239,1), rgba(231,235,239,0));z-index:1000"></div>
     <div style="position: absolute;top:40px;left:20px;z-index: 1000">
-      <span style="font-size: 36px;color: #bdc9d5">popstacle</span>
+      <span style="font-size: 36px;color: #bdc9d5" @click="mRefresh()">popstacle.top</span>
     </div>
     <div style="position: absolute;top:40px;right: 20px;z-index:1001">
       <span style="font-size: 36px;color: #bdc9d5" @click="showTips=!showTips"><i class="el-icon-more"></i></span>
@@ -22,7 +22,7 @@
     </div>
     <transition name="info-box">
       <div v-if="gameEnded" class="info-wrap"
-           style="position:absolute;top:300px;width:100%;z-index: 1400;color:#838c95">
+           :style="`position:absolute;top:${infoTop - 100}px;width:100%;z-index: 1400;color:#838c95`">
         <div class="info-wrap-horizontal"
              style="padding:20px;margin: auto;font-size: 60px;width:60%;background-color: #e7ebef;border-radius: 5px;box-shadow:0 5px 10px #838c95;">
           {{ getResult() }}
@@ -32,7 +32,8 @@
       </div>
     </transition>
     <transition name="info-box">
-      <div v-if="showTips" class="info-wrap" style="position:absolute;top:100px;width:100%;z-index: 1400;color:#838c95">
+      <div v-if="showTips" class="info-wrap"
+           :style="`position:absolute;top:${infoTop - 300}px;width:100%;z-index: 1400;color:#838c95`">
         <div class="info-wrap-horizontal"
              style="padding:20px;margin: auto;text-align: left;width:80%;height:300px;overflow: scroll;background-color: #e7ebef;border-radius: 5px;box-shadow:0 5px 10px #838c95;">
           <h1>游戏规则</h1>
@@ -47,7 +48,8 @@
       </div>
     </transition>
     <transition name="info-box">
-      <div v-if="showTips" class="info-wrap" style="position:absolute;top:460px;width:100%;z-index: 1400;color:#838c95">
+      <div v-if="showTips" class="info-wrap"
+           :style="`position:absolute;top:${infoTop + 60}px;width:100%;z-index: 1400;color:#838c95`">
         <div class="info-wrap-horizontal"
              style="padding:20px;margin: auto;text-align: left;width:80%;height:120px;background-color: #e7ebef;border-radius: 5px;box-shadow:0 5px 10px #838c95;">
           <h1>项目地址</h1>
@@ -72,7 +74,8 @@
         </div>
       </div>
       <div v-if="!gameStarted" class="info-wrap-horizontal" style="margin: 20px auto">
-        <el-button v-if="!invited" @click="invite" style="width: 62%">invite</el-button>
+        <el-button v-if="!invited" @click="invite" style="width: 62%" :disabled="myId==='' || inviteDisabled">invite
+        </el-button>
         <el-button v-else @click="accept" style="width: 62%">accept</el-button>
       </div>
       <div v-if="gameStarted" class="info-wrap-horizontal" style="margin: auto">
@@ -122,9 +125,10 @@ export default {
   name: 'App',
   components: {},
   mounted() {
+    this.infoTop = window.innerHeight / 2
     axios.get('/getId').then(
         (res) => {
-          console.log(res.data)
+          //console.log(res.data)
           this.myId = res.data.id_code
           this.$socket.emit('initRoom', this.myId)
         }
@@ -136,6 +140,7 @@ export default {
   },
   data() {
     return {
+      infoTop: 0,
       myId: '',
       opId: '',//这里的op是opponent的意思，而另一些地方的op是operation的意思，命名鬼才
       gameStarted: false,
@@ -203,37 +208,24 @@ export default {
       op2: 5,
       result: 0,
       countDown: '',
+      shortCountDown: '',
+      buttonDisabled: false,
+      inviteDisabled: false,
     }
   },
   sockets: {
     recvInvitation: function (data) {
-      console.log(data)
+      this.buttonDisabled = true
+      //console.log(data)
       this.opId = data
       this.invited = true
     },
     startGame: function () {
-      this.gameStarted = true
-      this.stack1 = []
-      this.stack2 = []
-      this.stackVisual1 = []
-      this.stackVisual2 = []
-      this.stackItemId1 = 0
-      this.stackItemId2 = 0
-      this.allCount1 = 0
-      this.allCount2 = 0
-      this.countDown = setInterval(() => {
-        if (this.seconds === 0) {
-          this.op1 = 5
-          this.op2 = 5
-          clearInterval(this.countDown)
-          //结算两方胜负
-          this.calcResult(this.stack1, this.stack2)
-        } else {
-          this.seconds -= 1
-        }
-      }, 1000)
+      this.mInitialize()
     },
     recvOpcode: function (data) {
+      this.buttonDisabled = false
+      clearTimeout(this.shortCountDown)
       let code1 = data.code1
       let code2 = data.code2
       let id1 = data.id1
@@ -245,16 +237,24 @@ export default {
       this.operateStack(code1, code2)
     },
     startShortCountDown: function (data) {
-      console.log(data, this.myId)
+      //console.log(data, this.myId)
       if (data !== this.myId) {
         this.op2 = 6
-        console.log('the opponent has chosen the operation')
+        //console.log('the opponent has chosen the operation')
+        this.shortCountDown = setTimeout(() => {
+          this.op1 = 0
+          this.$socket.emit('sendOpcode', {code: 0, room: (this.invited ? this.opId : this.myId), myId: this.myId})
+        }, 5000)//5秒内不作出选择默认选绿色
       }
     },
+    refresh: function () {
+      this.mRefresh()
+    }
   },
   methods: {
     invite: function () {
       if (this.opId.length === 4) {
+        this.inviteDisabled = true
         this.$socket.emit('invite', {myId: this.myId, opId: this.opId})
       }
     },
@@ -265,10 +265,27 @@ export default {
       this.invited = false
     },
     sendOpcode: function (code, enabled) {
+      if (this.buttonDisabled) return
       if (!this.gameStarted) return
       if (!enabled) return
       let xc = this.getTopCount(this.stack1)
       if (code > xc + 1) return
+      //单机模式
+      if (this.myId === this.opId) {
+        let code2 = Math.floor(Math.random() * 5)
+        let xc = this.getAllCount(this.stack1)
+        let yc = this.getTopCount(this.stack2)
+        if (code2 > yc + 1) code2 = 0
+        if (code2 === 1) {
+          let rd = Math.floor(Math.random() * 3)
+          if (rd !== 0) code2 = 0
+        }
+        if (xc / this.stack1.length < 0.9 && this.stack1.length - this.stack2.length < 2) code2 = 0
+        this.operateStack(code, code2)
+        return
+      }
+      this.buttonDisabled = true
+      clearTimeout(this.shortCountDown)
       this.op1 = code
       this.$socket.emit('sendOpcode', {code: code, room: (this.invited ? this.opId : this.myId), myId: this.myId})
     },
@@ -287,6 +304,31 @@ export default {
       if (this.result === -1) return 'You lose'
       return 'Tie'
     },
+    mInitialize: function () {
+      this.gameStarted = true
+      this.stack1 = []
+      this.stack2 = []
+      this.stackVisual1 = []
+      this.stackVisual2 = []
+      this.stackItemId1 = 0
+      this.stackItemId2 = 0
+      this.allCount1 = 0
+      this.allCount2 = 0
+      this.buttonDisabled = false
+      this.countDown = setInterval(() => {
+        if (this.seconds === 0) {
+          this.op1 = 5
+          this.op2 = 5
+          this.buttonDisabled = true
+          clearInterval(this.countDown)
+          clearTimeout(this.shortCountDown)
+          //结算两方胜负
+          this.calcResult(this.stack1, this.stack2)
+        } else {
+          this.seconds -= 1
+        }
+      }, 1000)
+    },
     reset: function () {
       this.seconds = 60
       this.stack1 = []
@@ -294,7 +336,14 @@ export default {
       this.stackVisual1 = []
       this.stackVisual2 = []
       this.gameEnded = false
-      this.$socket.emit('reset', {room: (this.invited ? this.opId : this.myId), myId: this.myId})
+      if (this.myId === this.opId) {
+        this.mInitialize()
+      } else {
+        this.$socket.emit('reset', {room: (this.invited ? this.opId : this.myId), myId: this.myId})
+      }
+    },
+    mRefresh: function () {
+      location.reload()
     },
     changeColor: function (item, enabled, down) {
       if (!enabled) return
@@ -330,7 +379,7 @@ export default {
         for (let i = 0; i < stack.length; ++i) {
           stackVisual.push({code: stack[i], id: id_temp[i]})
         }
-        console.log(stackVisual)
+        //console.log(stackVisual)
       }, 500)
     },
     getTopCount: function (stack) {
@@ -385,7 +434,7 @@ export default {
       }
       let xc = this.getTopCount(this.stack1)
       let yc = this.getTopCount(this.stack2)
-      console.log(code, code2, xc, yc)
+      //console.log(code, code2, xc, yc)
       if (code >= 2 && code <= 4 && code > code2) {
         let n = code - 1
         this.popStack(this.stack1, code, n)
